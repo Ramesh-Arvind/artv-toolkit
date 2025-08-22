@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "artv"
 version = "0.1.0"
 authors = [
-  { name="Your Team Name", email="contact@example.com" },
+  { name="ARTV Red Team tollkit", email="rameshln.96@gmail.com" },
 ]
 description = "An advanced agent-based red-teaming toolkit for discovering vulnerabilities in LLMs, developed for the OpenAI gpt-oss-20b Safety Hackathon."
 readme = "README.md"
