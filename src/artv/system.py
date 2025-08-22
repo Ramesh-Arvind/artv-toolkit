@@ -1019,7 +1019,7 @@ class AdvancedRedTeamSystem:
         
         for i, result in enumerate(top_5_findings, 1):
             try:
-                finding_json = result.enhanced_to_finding_json()
+                finding_json = result.to_finding_json()
                 vulnerability_name = result.vulnerability_topic.value if result.vulnerability_topic else "unknown"
                 filename = top5_dir / f"top_finding_{i}_{vulnerability_name}.json"
                 

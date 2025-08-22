@@ -2682,13 +2682,17 @@ class VulnerabilityVisualizer:
        return fig
    
     def create_success_rate_graph(self, all_results: List[AdvancedAttackResult]) -> plt.Figure:
-       """Create success rate comparison across attack types."""
+       """Create success rate comparison across attack types with non-overlapping labels."""
        
-       fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+       # Import the library specifically for this function
+       from adjustText import adjust_text
        
-       # Group by vulnerability type
+       fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+       
+       # --- Left Plot: Bar Chart (No changes needed here) ---
        vuln_types = {}
        for result in all_results:
+           if not result.vulnerability_topic: continue
            vuln_type = result.vulnerability_topic.value
            if vuln_type not in vuln_types:
                vuln_types[vuln_type] = {'success': 0, 'total': 0}
@@ -2696,40 +2700,40 @@ class VulnerabilityVisualizer:
            if result.success:
                vuln_types[vuln_type]['success'] += 1
        
-       # Calculate success rates
        types = list(vuln_types.keys())
-       success_rates = [vuln_types[t]['success'] / vuln_types[t]['total'] 
-                       for t in types]
+       success_rates = [(vuln_types[t]['success'] / vuln_types[t]['total']) if vuln_types[t]['total'] > 0 else 0 for t in types]
        totals = [vuln_types[t]['total'] for t in types]
        
-       # Bar chart of success rates
-       bars = ax1.bar(range(len(types)), success_rates, color='steelblue')
+       bars = ax1.bar(range(len(types)), success_rates, color='steelblue', alpha=0.9)
        ax1.set_xticks(range(len(types)))
-       ax1.set_xticklabels(types, rotation=45, ha='right')
+       ax1.set_xticklabels(types, rotation=45, ha='right', fontsize=10)
        ax1.set_ylabel('Success Rate')
-       ax1.set_title('Attack Success Rates by Vulnerability Type')
+       ax1.set_title('Attack Success Rates by Vulnerability Type', fontweight='bold')
        ax1.set_ylim(0, 1)
+       ax1.grid(axis='y', linestyle='--', alpha=0.6)
        
-       # Add percentage labels
        for bar, rate in zip(bars, success_rates):
            height = bar.get_height()
-           ax1.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{rate:.1%}', ha='center', va='bottom')
+           ax1.text(bar.get_x() + bar.get_width()/2., height, f'{rate:.1%}', ha='center', va='bottom', fontweight='bold')
+
+       # --- Right Plot: Scatter Plot with adjustText ---
+       scatter = ax2.scatter(totals, success_rates, s=120, alpha=0.7, c=success_rates, 
+                  cmap='RdYlGn', vmin=0, vmax=1, edgecolors='black', linewidth=0.5)
        
-       # Scatter plot: Success Rate vs Total Attempts
-       ax2.scatter(totals, success_rates, s=100, alpha=0.6, c=success_rates, 
-                  cmap='RdYlGn', vmin=0, vmax=1)
-       
+       # Create a list of text labels to be adjusted
+       texts = []
        for i, txt in enumerate(types):
-           ax2.annotate(txt, (totals[i], success_rates[i]), 
-                       fontsize=8, alpha=0.7)
+           texts.append(ax2.text(totals[i], success_rates[i], txt, fontsize=9))
+       
+       # Use adjust_text to automatically move labels to prevent overlap
+       adjust_text(texts, arrowprops=dict(arrowstyle='->', color='gray', lw=0.5))
        
        ax2.set_xlabel('Total Attempts')
        ax2.set_ylabel('Success Rate')
-       ax2.set_title('Attack Efficiency Analysis')
-       ax2.grid(True, alpha=0.3)
+       ax2.set_title('Attack Efficiency Analysis', fontweight='bold')
+       ax2.grid(True, alpha=0.4, linestyle=':')
        
-       plt.tight_layout()
+       plt.tight_layout(pad=2.0)
        return fig
    
     def create_novelty_timeline(self, results: List[AdvancedAttackResult]) -> plt.Figure:
